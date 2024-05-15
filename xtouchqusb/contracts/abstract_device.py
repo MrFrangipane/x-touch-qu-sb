@@ -7,7 +7,9 @@ from xtouchqusb.entities.channel_state import ChannelState
 
 class AbstractDevice(ABC):
 
-    def __init__(self, channel_state_update_callback: Callable):
+    def __init__(self, configuration: dict, channel_state_update_callback: Callable):
+        self._configuration = configuration
+        self._enabled = configuration['enabled']
         self._callback = channel_state_update_callback
 
     @abstractmethod

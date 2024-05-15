@@ -1,12 +1,28 @@
 {
     "qu-sb": {
+        "enabled": true,
         "host": "192.168.20.4",
-        "midi_in": "QU-SB MIDI In 2",
-        "midi_out": "QU-SB MIDI Out 3",
-        "tcp_only": true
+        "midi_in": {
+            "type": "midi",
+            "detection_pattern": "QU-SB MIDI"
+        },
+        "midi_out":{
+            "type": "midi",
+            "detection_pattern": "QU-SB MIDI"
+        }
     },
     "x-touch": {
-        "midi_in": "X-Touch-Ext 1",
-        "midi_out": "X-Touch-Ext 2"
+        "enabled": false,
+        "midi_in": {
+            "detection_pattern": "X-Touch-Ext"
+        },
+        "midi_out":{
+            "detection_pattern": "X-Touch-Ext"
+        }
+    },
+    "osc": {
+        "enabled": true,
+        "host": "0.0.0.0",
+        "port": 5656
     }
 }

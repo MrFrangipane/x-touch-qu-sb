@@ -17,23 +17,30 @@ class XTouch(AbstractDevice):
 
     CHANNEL_OFFSET = 32
 
-    def __init__(self, in_port_name: str, out_port_name: str, channel_state_update_callback: Callable):
-        super().__init__(channel_state_update_callback)
-        self._in_port_name = in_port_name
-        self._out_port_name = out_port_name
+    def __init__(self, configuration: dict, channel_state_update_callback: Callable):
+        super().__init__(configuration, channel_state_update_callback)
 
         self._in_port: BaseInput = None
         self._out_port: BaseOutput = None
 
     def connect(self):
-        self._in_port = mido.open_input(self._in_port_name)
-        self._out_port = mido.open_output(self._out_port_name)
+        if not self._enabled:
+            return
+
+        self._in_port = mido.open_input(self._configuration['midi_in']['port_name'])
+        self._out_port = mido.open_output(self._configuration['midi_out']['port_name'])
 
     def close(self):
+        if not self._enabled:
+            return
+
         self._in_port.close()
         self._out_port.close()
 
     def poll(self):
+        if not self._enabled:
+            return
+
         message = self._in_port.receive(block=False)
         if message is not None:
             _logger.info(message)
@@ -59,6 +66,9 @@ class XTouch(AbstractDevice):
             self._out_port.send(message)
 
     def set_channel_state(self, channel_state: ChannelState):
+        if not self._enabled:
+            return
+
         channel = channel_state.channel - self.CHANNEL_OFFSET  # todo: paginate
         if channel > 15 or channel < 0:
             return
