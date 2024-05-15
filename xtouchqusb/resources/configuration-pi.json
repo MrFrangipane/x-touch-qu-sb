@@ -1,0 +1,12 @@
+{
+    "qu-sb": {
+        "host": "192.168.20.4",
+        "midi_in": "QU-SB:QU-SB QU-SB MIDI In 28:0",
+        "midi_out": "QU-SB:QU-SB QU-SB MIDI In 28:0",
+        "tcp_only": true
+    },
+    "x-touch": {
+        "midi_in": "X-Touch-Ext:X-Touch-Ext X-TOUCH_INT 32:0",
+        "midi_out": "X-Touch-Ext:X-Touch-Ext X-TOUCH_INT 32:0"
+    }
+}
