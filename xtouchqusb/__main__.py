@@ -21,6 +21,9 @@ def load_configuration(configuration_filepath):
     midi_inputs: list[str] = mido.get_input_names()
     midi_outputs: list[str] = mido.get_output_names()
 
+    _logger.info(f"MIDI in ports: {', '.join(midi_inputs)}")
+    _logger.info(f"MIDI out ports: {', '.join(midi_outputs)}")
+
     for midi_input in midi_inputs:
         if 'X-Touch-Ext' in midi_input:
             configuration['x-touch']['midi_in'] = midi_input
