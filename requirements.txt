@@ -1,2 +1,3 @@
-PySide6
-pyside6-helpers @ git+https://github.com/MrFrangipane/pyside6-helpers@main
+mido[ports-rtmidi]
+# PySide6
+# pyside6-helpers @ git+https://github.com/MrFrangipane/pyside6-helpers@main
