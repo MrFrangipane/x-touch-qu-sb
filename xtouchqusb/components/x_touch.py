@@ -1,4 +1,4 @@
-import time
+import logging
 from typing import Callable
 
 import mido
@@ -8,6 +8,9 @@ from mido.ports import BaseInput, BaseOutput
 from xtouchqusb.contracts.abstract_device import AbstractDevice
 from xtouchqusb.entities.channel_parameters_enum import ChannelParametersEnum
 from xtouchqusb.entities.channel_state import ChannelState
+
+
+_logger = logging.getLogger(__name__)
 
 
 class XTouch(AbstractDevice):
@@ -33,6 +36,7 @@ class XTouch(AbstractDevice):
     def poll(self):
         message = self._in_port.receive(block=False)
         if message is not None:
+            _logger.info(message)
             if message.type == 'pitchwheel':
                 value = int(float(message.pitch + 8192) / 16380.0 * 127)
                 self._callback(ChannelState(
@@ -55,10 +59,11 @@ class XTouch(AbstractDevice):
             self._out_port.send(message)
 
     def set_channel_state(self, channel_state: ChannelState):
-        # print('Xt <', channel_state)
         channel = channel_state.channel - self.CHANNEL_OFFSET  # todo: paginate
         if channel > 15 or channel < 0:
             return
+
+        _logger.info(channel_state)
 
         if channel_state.parameter == ChannelParametersEnum.FADER:
             value = int((channel_state.value * 128) - 8192)

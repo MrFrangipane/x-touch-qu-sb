@@ -3,7 +3,7 @@
         "host": "192.168.20.4",
         "midi_in": "QU-SB MIDI In 2",
         "midi_out": "QU-SB MIDI Out 3",
-        "tcp_only": false
+        "tcp_only": true
     },
     "x-touch": {
         "midi_in": "X-Touch-Ext 1",

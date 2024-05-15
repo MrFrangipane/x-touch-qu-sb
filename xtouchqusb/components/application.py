@@ -1,6 +1,3 @@
-import json
-import os.path
-
 from xtouchqusb.components.qu_sb import QuSb
 from xtouchqusb.components.x_touch import XTouch
 
@@ -8,13 +5,7 @@ from xtouchqusb.components.x_touch import XTouch
 class Application:
     FRAMERATE = 60
 
-    def __init__(self, configuration_filepath: str):
-        if not os.path.isfile(configuration_filepath):
-            raise FileNotFoundError(f'Configuration file not found {configuration_filepath}')
-
-        with open(configuration_filepath, 'r') as configuration_file:
-            configuration = json.load(configuration_file)
-
+    def __init__(self, configuration: dict):
         self.x_touch = XTouch(
             in_port_name=configuration['x-touch']['midi_in'],
             out_port_name=configuration['x-touch']['midi_out'],
