@@ -46,6 +46,20 @@ class XTouch(AbstractDevice):
         if self._out_port is None:
             raise ConnectionError(f"No MIDI out port matching '{pattern}' was found")
 
+        # FIXME: some tests
+        self.message = Message(
+            type='sysex',
+            data=b'\x00\x00\x66\x15\x12\x00\x54\x72\x61\x63\x6B\x20\x31'
+        )
+        self._out_port.send(self.message)
+
+        AA_on_1     = 'F0 00 00 66 15 72 07 07 07 07 07 07 07 07 F7'
+        Track1_on_1 = 'F0 00 00 66 15 12 00 54 72 61 63 6B 20 31 F7'
+
+        BB_on_2     = 'F0 00 00 66 15 12 07 42 42 20 20 20 20 20 F7'
+        Track2_on_2 = 'F0 00 00 66 15 12 07 54 72 61 63 6B 20 32 F7'
+
+
     def close(self):
         self._in_port.close()
         self._out_port.close()
@@ -73,6 +87,7 @@ class XTouch(AbstractDevice):
                 _logger.info(message)
 
             self._out_port.send(message)
+            self._out_port.send(self.message)
 
     def set_channel_state(self, channel_state: ChannelState):
         channel = channel_state.channel - self.CHANNEL_OFFSET  # todo: paginate
