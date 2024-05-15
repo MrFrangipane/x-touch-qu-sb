@@ -1,0 +1,10 @@
+---
+component_a:
+    type: "osc-server"
+    host: "0.0.0.0"
+    port: 5656
+
+component_b:
+    type: "qu-sb"
+    host: "192.168.20.4"
+    midi_port_name_pattern: "QU-SB MIDI"

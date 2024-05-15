@@ -24,26 +24,35 @@ class XTouch(AbstractDevice):
         self._out_port: BaseOutput = None
 
     def connect(self):
-        if not self._enabled:
-            return
+        pattern = self._configuration['midi_port_name_pattern']
+        midi_inputs: list[str] = mido.get_input_names()
+        midi_outputs: list[str] = mido.get_output_names()
 
-        self._in_port = mido.open_input(self._configuration['midi_in']['port_name'])
-        self._out_port = mido.open_output(self._configuration['midi_out']['port_name'])
+        for midi_input in midi_inputs:
+            if pattern in midi_input:
+                self._in_port = mido.open_input(midi_input)
+                _logger.info(f"Auto detected MIDI input port for X Touch '{midi_input}'")
+                break
+
+        for midi_output in midi_outputs:
+            if pattern in midi_output:
+                self._out_port = mido.open_output(midi_output)
+                _logger.info(f"Auto detected MIDI output port for X Touch '{midi_output}'")
+                break
+
+        if self._in_port is None:
+            raise ConnectionError(f"No MIDI in port matching '{pattern}' was found")
+
+        if self._out_port is None:
+            raise ConnectionError(f"No MIDI out port matching '{pattern}' was found")
 
     def close(self):
-        if not self._enabled:
-            return
-
         self._in_port.close()
         self._out_port.close()
 
     def poll(self):
-        if not self._enabled:
-            return
-
         message = self._in_port.receive(block=False)
         if message is not None:
-            _logger.info(message)
             if message.type == 'pitchwheel':
                 value = int(float(message.pitch + 8192) / 16380.0 * 127)
                 self._callback(ChannelState(
@@ -61,19 +70,16 @@ class XTouch(AbstractDevice):
                 self._callback(channel_state)
 
             else:
-                print('Xt >', message)
+                _logger.info(message)
 
             self._out_port.send(message)
 
     def set_channel_state(self, channel_state: ChannelState):
-        if not self._enabled:
-            return
-
         channel = channel_state.channel - self.CHANNEL_OFFSET  # todo: paginate
         if channel > 15 or channel < 0:
             return
 
-        _logger.info(channel_state)
+        # _logger.info(channel_state)
 
         if channel_state.parameter == ChannelParametersEnum.FADER:
             value = int((channel_state.value * 128) - 8192)

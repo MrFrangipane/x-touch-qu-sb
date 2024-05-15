@@ -62,8 +62,8 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 2:
         configuration_filepath = os.path.join(os.path.dirname(__file__), 'resources', sys.argv[1])
-        configuration = load_configuration(configuration_filepath)
-        application = Application(configuration)
-        application.main()
+        application = Application()
+        application.load_configuration(configuration_filepath)
+        application.exec()
     else:
         raise AttributeError('No configuration filepath provided')

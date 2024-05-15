@@ -54,9 +54,6 @@ class QuSb(AbstractDevice):
         self._poll_sleep = 0
 
     def connect(self):
-        if not self._enabled:
-            return
-
         in_type = self._configuration['midi_in']['type']
         out_type = self._configuration['midi_out']['type']
 
@@ -76,16 +73,10 @@ class QuSb(AbstractDevice):
             self._out = self._tcp_socket
 
     def close(self):
-        if not self._enabled:
-            return
-
         self._in.close()
         self._out.close()
 
     def poll(self):
-        if not self._enabled:
-            return
-
         message = self._in.receive(block=False)
 
         if message is not None and message.type != 'active_sensing':
@@ -117,9 +108,6 @@ class QuSb(AbstractDevice):
         time.sleep(self._poll_sleep)
 
     def set_channel_state(self, channel_state: ChannelState):
-        if not self._enabled:
-            return
-
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 

@@ -1,0 +1,10 @@
+---
+component_a:
+    type: "osc-client"
+    server-host: "192.168.20.225"
+    server-port: 5656
+    client-port: 5657
+
+component_b:
+    type: "x-touch"
+    midi_port_name_pattern: "X-Touch-Ext"

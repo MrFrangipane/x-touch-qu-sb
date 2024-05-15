@@ -1,42 +1,54 @@
+import os.path
+from typing import Callable
+
+import yaml
+
 from xtouchqusb.components.qu_sb import QuSb
-from xtouchqusb.components.osc import OSC
+from xtouchqusb.components.osc_client import OscClient
+from xtouchqusb.components.osc_server import OscServer
 from xtouchqusb.components.x_touch import XTouch
+from xtouchqusb.contracts.abstract_device import AbstractDevice
 
 
 class Application:
-    FRAMERATE = 60
+    def __init__(self):
+        self._component_a: AbstractDevice = None
+        self._component_b: AbstractDevice = None
 
-    def __init__(self, configuration: dict):
-        self.osc = OSC(
-            configuration=configuration['osc'],
-            channel_state_callback=self.callback_qu_sb
-        )
-        self.qu_sb = QuSb(
-            configuration=configuration['qu-sb'],
-            channel_state_callback=self.callback_osc
-        )
+    def load_configuration(self, filepath: str):
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"Given configuration filepath does not exists '{filepath}'")
 
-    def callback_osc(self, channel_state):
-        self.osc.set_channel_state(channel_state)
+        with open(filepath, 'r') as yaml_file:
+            configuration = yaml.safe_load(yaml_file)
 
-    def callback_qu_sb(self, channel_state):
-        self.qu_sb.set_channel_state(channel_state)
+        self._component_a = self._configure_component(configuration['component_a'], self._callback_b)
+        self._component_b = self._configure_component(configuration['component_b'], self._callback_a)
 
-    def callback_x_touch(self, channel_state):
-        self.x_touch.set_channel_state(channel_state)
+    @staticmethod
+    def _configure_component(configuration: dict, callback: Callable) -> AbstractDevice:
+        return {
+            'osc-client': OscClient,
+            'osc_server': OscServer,
+            'x-touch': XTouch,
+            'qu-sb': QuSb
+        }[configuration['type']](configuration, callback)
 
+    def _callback_a(self, channel_state):
+        self._component_a.set_channel_state(channel_state)
 
-    def main(self):
+    def _callback_b(self, channel_state):
+        self._component_b.set_channel_state(channel_state)
+
+    def exec(self):
         try:
-            self.osc.connect()
-
-            self.qu_sb.connect()
-            self.qu_sb.request_state()
+            self._component_a.connect()
+            self._component_b.connect()
 
             while True:
-                self.osc.poll()
-                self.qu_sb.poll()
+                self._component_a.poll()
+                self._component_b.poll()
 
         except KeyboardInterrupt:
-            self.qu_sb.close()
-            self.osc.close()
+            self._component_a.close()
+            self._component_b.close()
