@@ -29,7 +29,7 @@ class Application:
     def _configure_component(configuration: dict, callback: Callable) -> AbstractDevice:
         return {
             'osc-client': OscClient,
-            'osc_server': OscServer,
+            'osc-server': OscServer,
             'x-touch': XTouch,
             'qu-sb': QuSb
         }[configuration['type']](configuration, callback)
