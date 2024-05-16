@@ -24,6 +24,7 @@ class Midi:
         self._configuration = configuration
         self.queue_in: Queue[Message] = Queue()
         self.queue_out: Queue[Message] = Queue()
+        self.queue_out_tcp: Queue[Message] = Queue()
         self._thread = Thread(target=self._loop, daemon=True)
 
         self._is_running: bool = False
@@ -40,10 +41,6 @@ class Midi:
 
         self._is_running = True
         while self._is_running:
-            message = midi_tcp.receive(block=False)
-            if message is not None:
-                self.queue_in.put(message)
-
             message = midi_in.receive(block=False)
             if message is not None:
                 self.queue_in.put(message)
@@ -51,6 +48,10 @@ class Midi:
             if not self.queue_out.empty():
                 message = self.queue_out.get(block=False)
                 midi_out.send(message)
+
+            if not self.queue_out_tcp.empty():
+                message = self.queue_out.get(block=False)
+                midi_tcp.send(message)
 
         midi_tcp.close()
         midi_in.close()
@@ -138,14 +139,15 @@ class QuSb(AbstractDevice):
             type='sysex',
             data=self.SYSEX_HEADER + self.SYSEX_ALL_CALL + self.SYSEX_GET_SYSTEM_STATE + b'\x00'  # we are not an iPad
         )
-        with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
-            tcp_socket.send(request_message)
-            for message in tcp_socket:
-                if bytearray(message.bytes()[1:-1]) == self.SYSEX_HEADER + b'\x00' + self.SYSEX_SYSTEM_STATE_END:
-                    tcp_socket.close()
-                    break
-                else:
-                    self._process_message(message)
+        self._midi.queue_out_tcp.put(request_message)
+        # with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
+        #     tcp_socket.send(request_message)
+        #     for message in tcp_socket:
+        #         if bytearray(message.bytes()[1:-1]) == self.SYSEX_HEADER + b'\x00' + self.SYSEX_SYSTEM_STATE_END:
+        #             tcp_socket.close()
+        #             break
+        #         else:
+        #             self._process_message(message)
 
     def _process_message(self, message: Message):
         if message is None or message.type == 'active_sensing':
