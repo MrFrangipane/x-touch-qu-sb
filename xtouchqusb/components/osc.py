@@ -45,7 +45,7 @@ class Osc(AbstractDevice):
         pass
 
     def set_channel_state(self, channel_state: ChannelState):
-        print(channel_state, self._latest_sent_channel_state)
+        print(channel_state == self._latest_sent_channel_state, channel_state, self._latest_sent_channel_state)
 
         if channel_state == self._latest_sent_channel_state:
             return
