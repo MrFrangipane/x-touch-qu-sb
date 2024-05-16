@@ -45,6 +45,7 @@ class Midi:
 
         self._is_running = True
         while self._is_running:
+            _logger.info(f"Kick")
             message = midi_in.receive(block=False)
             if message is not None:
                 self.queue_in.put(message)
