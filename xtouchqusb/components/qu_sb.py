@@ -93,7 +93,7 @@ class QuSb(AbstractDevice):
                     )
                     self._callback(channel_state)
 
-        time.sleep(self.POLL_SLEEP)
+        # time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
