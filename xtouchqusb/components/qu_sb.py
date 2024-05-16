@@ -56,7 +56,6 @@ class QuSb(AbstractDevice):
         pattern = self._configuration['midi_port_name_pattern']
         self._in = open_input_from_pattern(pattern)
         self._out = open_output_from_pattern(pattern)
-        self._tcp_socket = connect(host=self._configuration['host'], portno=self.TCP_PORT)
 
         self.request_state()
 
@@ -126,4 +125,5 @@ class QuSb(AbstractDevice):
             type='sysex',
             data=self.SYSEX_HEADER + self.SYSEX_ALL_CALL + self.SYSEX_GET_SYSTEM_STATE + b'\x00'  # we are not an iPad
         )
-        self._tcp_socket.send(message)
+        with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
+            tcp_socket.send(message)
