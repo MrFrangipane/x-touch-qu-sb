@@ -68,7 +68,7 @@ class QuSb(AbstractDevice):
         if message is not None:
             self._process_message(message)
 
-        # time.sleep(self.POLL_SLEEP)
+        time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
