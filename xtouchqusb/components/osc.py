@@ -45,21 +45,20 @@ class Osc(AbstractDevice):
         pass
 
     def set_channel_state(self, channel_state: ChannelState):
-        print(channel_state == self._latest_sent_channel_state, channel_state, self._latest_sent_channel_state)
-
         if channel_state == self._latest_sent_channel_state:
+            print('skipped')
             return
 
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
             self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
-            self._latest_sent_channel_state = copy(channel_state)
 
     def _parse_osc(self, reply_address, osc_address, osc_value):
         channel_number = int(osc_address[-1]) - 1
-
-        self._callback(ChannelState(
+        channel_state = ChannelState(
             channel=32 + channel_number,
             parameter=ChannelParametersEnum.FADER,
             value=int(osc_value * 127)
-        ))
+        )
+        self._latest_sent_channel_state = copy(channel_state)
+        self._callback(channel_state)
