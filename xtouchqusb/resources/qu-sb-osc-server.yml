@@ -1,8 +1,10 @@
 ---
 component_a:
-    type: "osc-server"
-    host: "0.0.0.0"
-    port: 5656
+    type: "osc"
+    server-host: "0.0.0.0"
+    server-port: 5656
+    client-host: '192.168.20.7'  # Desktop with XTouch
+    client-port: 5657
 
 component_b:
     type: "qu-sb"

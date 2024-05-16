@@ -4,8 +4,7 @@ from typing import Callable
 import yaml
 
 from xtouchqusb.components.qu_sb import QuSb
-from xtouchqusb.components.osc_client import OscClient
-from xtouchqusb.components.osc_server import OscServer
+from xtouchqusb.components.osc import Osc
 from xtouchqusb.components.x_touch import XTouch
 from xtouchqusb.contracts.abstract_device import AbstractDevice
 
@@ -28,8 +27,7 @@ class Application:
     @staticmethod
     def _configure_component(configuration: dict, callback: Callable) -> AbstractDevice:
         return {
-            'osc-client': OscClient,
-            'osc-server': OscServer,
+            'osc': Osc,
             'x-touch': XTouch,
             'qu-sb': QuSb
         }[configuration['type']](configuration, callback)

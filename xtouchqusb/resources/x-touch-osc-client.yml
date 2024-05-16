@@ -1,9 +1,10 @@
 ---
 component_a:
-    type: "osc-client"
-    server-host: "192.168.20.225"
-    server-port: 5656
-    client-port: 5657
+    type: "osc"
+    server-host: "0.0.0.0"
+    server-port: 5657
+    client-host: '192.168.20.255'  # Qu-SB's Pi
+    client-port: 5656
 
 component_b:
     type: "x-touch"
