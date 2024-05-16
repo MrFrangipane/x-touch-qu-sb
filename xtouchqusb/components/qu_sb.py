@@ -33,11 +33,15 @@ class Midi:
         self._thread.start()
 
     def _loop(self):
+        _logger.info(f"Connecting to MIDI Socket...")
         midi_tcp: SocketPort = connect(host=self._configuration['host'], portno=self.TCP_PORT)
+        _logger.info(f"done")
 
+        _logger.info(f"Opening MIDI Ports...")
         pattern = self._configuration['midi_port_name_pattern']
         midi_in: BaseInput = open_input_from_pattern(pattern)
         midi_out: BaseOutput = open_output_from_pattern(pattern)
+        _logger.info(f"done")
 
         self._is_running = True
         while self._is_running:
@@ -47,15 +51,15 @@ class Midi:
 
             try:
                 message = self.queue_out.get(block=False)
+                _logger.info(f"Send to MIDI: {message}")
                 midi_out.send(message)
 
                 message = self.queue_out.get(block=False)
+                _logger.info(f"Send to TCP: {message}")
                 midi_tcp.send(message)
 
             except Empty:
                 pass
-
-            time.sleep(0.005)
 
         midi_tcp.close()
         midi_in.close()
@@ -108,9 +112,12 @@ class QuSb(AbstractDevice):
         self._midi.stop()
 
     def poll(self):
-        while not self._midi.queue_in.empty():
-            message = self._midi.queue_in.get()
-            self._process_message(message)
+        while True:
+            try:
+                message = self._midi.queue_in.get()
+                self._process_message(message)
+            except Empty:
+                break
 
     def set_channel_state(self, channel_state: ChannelState):
         """Usually called as a callback by the other component"""
