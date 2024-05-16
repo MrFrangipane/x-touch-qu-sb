@@ -52,7 +52,7 @@ class Osc(AbstractDevice):
         print('ss', channel_state)
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
-            # self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
+            self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
 
     def _parse_osc(self, reply_address, osc_address, osc_value):
         channel_number = int(osc_address[-1]) - 1
