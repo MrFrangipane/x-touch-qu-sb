@@ -131,4 +131,5 @@ class QuSb(AbstractDevice):
             for message in tcp_socket:
                 if bytearray(message.bytes()[1:-1]) == self.SYSEX_HEADER + b'\x00' + self.SYSEX_SYSTEM_STATE_END:
                     tcp_socket.close()
+                    break
                 self._process_message(message)
