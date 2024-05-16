@@ -23,6 +23,7 @@ class QuSb(AbstractDevice):
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
     SYSEX_GET_SYSTEM_STATE = b'\x10'
+    SYSEX_SYSTEM_STATE_END = b'\x14'
 
     # todo: hex notation ?
     NRPN_CHANNEL = 99
@@ -128,4 +129,6 @@ class QuSb(AbstractDevice):
         with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
             tcp_socket.send(message)
             for message in tcp_socket:
-                print(message)
+                print(message.bytes())
+                if message.bytes() == self.SYSEX_HEADER + self.SYSEX_SYSTEM_STATE_END:
+                    tcp_socket.close()
