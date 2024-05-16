@@ -55,6 +55,8 @@ class Midi:
             except Empty:
                 pass
 
+            time.sleep(0.005)
+
         midi_tcp.close()
         midi_in.close()
         midi_out.close()
