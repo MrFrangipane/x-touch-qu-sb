@@ -53,11 +53,11 @@ class QuSb(AbstractDevice):
         self._message_value: int = None
 
     def connect(self):
+        self.request_state()
+
         pattern = self._configuration['midi_port_name_pattern']
         self._in = open_input_from_pattern(pattern)
         self._out = open_output_from_pattern(pattern)
-
-        self.request_state()
 
     def close(self):
         self._in.close()
@@ -127,3 +127,5 @@ class QuSb(AbstractDevice):
         )
         with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
             tcp_socket.send(message)
+            for message in tcp_socket:
+                print(message)
