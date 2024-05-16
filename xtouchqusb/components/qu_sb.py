@@ -46,7 +46,7 @@ class QuSb(AbstractDevice):
 
         self._in: BaseInput = None
         self._out: BaseOutput = None
-        self._tcp_socket: SocketPort = None
+        # self._tcp_socket: SocketPort = None
 
         self._message_channel: int = None
         self._message_parameter: ChannelParametersEnum = None
@@ -62,7 +62,7 @@ class QuSb(AbstractDevice):
     def close(self):
         self._in.close()
         self._out.close()
-        self._tcp_socket.close()
+        # self._tcp_socket.close()
 
     def poll(self):
         message = self._in.receive(block=False)
@@ -93,7 +93,7 @@ class QuSb(AbstractDevice):
                     )
                     self._callback(channel_state)
 
-        # time.sleep(self.POLL_SLEEP)
+        time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
