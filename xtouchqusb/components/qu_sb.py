@@ -54,7 +54,7 @@ class Midi:
                 _logger.info(f"Send to MIDI: {message}")
                 midi_out.send(message)
 
-                message = self.queue_out.get(block=False)
+                message = self.queue_out_tcp.get(block=False)
                 _logger.info(f"Send to TCP: {message}")
                 midi_tcp.send(message)
 
