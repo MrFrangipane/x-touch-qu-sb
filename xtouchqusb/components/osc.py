@@ -45,7 +45,7 @@ class Osc(AbstractDevice):
         pass
 
     def set_channel_state(self, channel_state: ChannelState):
-        print('<', channel_state)
+        print('ss', channel_state)
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
             self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
@@ -58,7 +58,9 @@ class Osc(AbstractDevice):
             value=int(osc_value * 127)
         )
         if cs == self._u:
-            print('x')
+            print('xx', cs)
             return
+        else:
+            print('cb', cs)
         self._u = copy.copy(cs)
         self._callback(cs)
