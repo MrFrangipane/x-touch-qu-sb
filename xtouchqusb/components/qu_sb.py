@@ -1,6 +1,6 @@
 import logging
 import time
-from queue import Queue
+from queue import Empty, Queue
 from threading import Thread
 from typing import Callable
 
@@ -45,13 +45,15 @@ class Midi:
             if message is not None:
                 self.queue_in.put(message)
 
-            if not self.queue_out.empty():
+            try:
                 message = self.queue_out.get(block=False)
                 midi_out.send(message)
 
-            if not self.queue_out_tcp.empty():
                 message = self.queue_out.get(block=False)
                 midi_tcp.send(message)
+
+            except Empty:
+                pass
 
         midi_tcp.close()
         midi_in.close()
