@@ -1,5 +1,4 @@
 import logging
-from copy import copy
 from typing import Callable
 from threading import Thread
 
@@ -21,7 +20,6 @@ class Osc(AbstractDevice):
         self._server: ThreadingOSCUDPServer = None
         self._client: SimpleUDPClient = None
         self._server_thread: Thread = None
-        self._latest_sent_channel_state: ChannelState = None
 
     def connect(self):
         dispatcher = Dispatcher()
@@ -45,20 +43,14 @@ class Osc(AbstractDevice):
         pass
 
     def set_channel_state(self, channel_state: ChannelState):
-        if channel_state == self._latest_sent_channel_state:
-            print('skipped')
-            return
-
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
             self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
 
     def _parse_osc(self, reply_address, osc_address, osc_value):
         channel_number = int(osc_address[-1]) - 1
-        channel_state = ChannelState(
+        self._callback(ChannelState(
             channel=32 + channel_number,
             parameter=ChannelParametersEnum.FADER,
             value=int(osc_value * 127)
-        )
-        self._latest_sent_channel_state = copy(channel_state)
-        self._callback(channel_state)
+        ))

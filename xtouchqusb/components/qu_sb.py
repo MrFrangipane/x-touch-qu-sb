@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 class QuSb(AbstractDevice):
     TCP_PORT = 51325
 
-    POLL_SLEEP = 0.001
+    POLL_SLEEP = 0.01
 
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
