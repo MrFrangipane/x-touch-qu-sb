@@ -93,21 +93,24 @@ class QuSb(AbstractDevice):
         ))
 
     def request_state(self):
-        message = Message(
+        request_message = Message(
             type='sysex',
             data=self.SYSEX_HEADER + self.SYSEX_ALL_CALL + self.SYSEX_GET_SYSTEM_STATE + b'\x00'  # we are not an iPad
         )
         with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
-            tcp_socket.send(message)
+            tcp_socket.send(request_message)
             for message in tcp_socket:
                 if bytearray(message.bytes()[1:-1]) == self.SYSEX_HEADER + b'\x00' + self.SYSEX_SYSTEM_STATE_END:
                     tcp_socket.close()
                     break
-                self._process_message(message)
+                else:
+                    self._process_message(message)
 
     def _process_message(self, message: Message):
         if message is None or message.type == 'active_sensing':
             return
+
+        _logger.info(f"{time.time()}: {message}")
 
         if message.type == 'sysex':
             # TODO: do something ?

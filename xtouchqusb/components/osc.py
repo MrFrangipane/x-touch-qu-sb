@@ -44,7 +44,6 @@ class Osc(AbstractDevice):
     def poll(self):
         while not self._channel_state_queue.empty():
             channel_state = self._channel_state_queue.get()
-            print('cb', channel_state)
             self._callback(channel_state)
 
     def set_channel_state(self, channel_state: ChannelState):
