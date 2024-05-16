@@ -2,6 +2,7 @@ import copy
 import logging
 from typing import Callable
 from threading import Thread
+from queue import Queue
 
 from pythonosc.osc_server import ThreadingOSCUDPServer, Dispatcher
 from pythonosc.udp_client import SimpleUDPClient
@@ -21,6 +22,7 @@ class Osc(AbstractDevice):
         self._server: ThreadingOSCUDPServer = None
         self._client: SimpleUDPClient = None
         self._server_thread: Thread = None
+        self._queue= Queue()
         self._u = None
 
     def connect(self):
@@ -42,7 +44,10 @@ class Osc(AbstractDevice):
         pass
 
     def poll(self):
-        pass
+        while not self._queue.empty():
+            cs = self._queue.get()
+            print('cb', cs)
+            self._callback(cs)
 
     def set_channel_state(self, channel_state: ChannelState):
         print('ss', channel_state)
@@ -57,10 +62,4 @@ class Osc(AbstractDevice):
             parameter=ChannelParametersEnum.FADER,
             value=int(osc_value * 127)
         )
-        if cs == self._u:
-            print('xx', cs)
-            return
-        else:
-            print('cb', cs)
-        self._u = copy.copy(cs)
-        self._callback(cs)
+        self._queue.put(cs)
