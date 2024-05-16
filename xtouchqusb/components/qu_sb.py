@@ -129,6 +129,6 @@ class QuSb(AbstractDevice):
         with connect(host=self._configuration['host'], portno=self.TCP_PORT) as tcp_socket:
             tcp_socket.send(message)
             for message in tcp_socket:
-                print(message.bytes())
+                print(message.bytes()[1:-1], self.SYSEX_HEADER + self.SYSEX_SYSTEM_STATE_END)
                 if message.bytes()[1:-1] == self.SYSEX_HEADER + self.SYSEX_SYSTEM_STATE_END:
                     tcp_socket.close()
