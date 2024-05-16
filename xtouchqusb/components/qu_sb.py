@@ -2,7 +2,6 @@ import logging
 import time
 from typing import Callable
 
-import mido
 from mido.messages import Message
 from mido.sockets import connect, SocketPort
 from mido.ports import BaseInput, BaseOutput
@@ -10,6 +9,7 @@ from mido.ports import BaseInput, BaseOutput
 from xtouchqusb.contracts.abstract_device import AbstractDevice
 from xtouchqusb.entities.channel_parameters_enum import ChannelParametersEnum
 from xtouchqusb.entities.channel_state import ChannelState
+from xtouchqusb.python_extensions.mido_extensions import open_input_from_pattern, open_output_from_pattern
 
 
 _logger = logging.getLogger(__name__)
@@ -17,6 +17,8 @@ _logger = logging.getLogger(__name__)
 
 class QuSb(AbstractDevice):
     TCP_PORT = 51325
+
+    POLL_SLEEP = 0.005
 
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
@@ -42,39 +44,24 @@ class QuSb(AbstractDevice):
     def __init__(self, configuration: dict, channel_state_callback: Callable):
         super().__init__(configuration, channel_state_callback)
 
+        self._in: BaseInput = None
+        self._out: BaseOutput = None
         self._tcp_socket: SocketPort = None
 
         self._message_channel: int = None
         self._message_parameter: ChannelParametersEnum = None
         self._message_value: int = None
 
-        self._in: BaseInput = None
-        self._out: BaseOutput = None
-
-        self._poll_sleep = 0
-
     def connect(self):
-        in_type = self._configuration['midi_in']['type']
-        out_type = self._configuration['midi_out']['type']
-
-        if 'tcp' in [in_type, out_type]:
-            self._tcp_socket = connect(host=self._configuration['host'], portno=self.TCP_PORT)
-        else:
-            self._poll_sleep = 0.001
-
-        if in_type == 'midi':
-            self._in = mido.open_input(self._configuration['midi_in']['port_name'])
-        else:
-            self._in = self._tcp_socket
-
-        if out_type == 'midi':
-            self._out = mido.open_output(self._configuration['midi_out']['port_name'])
-        else:
-            self._out = self._tcp_socket
+        pattern = self._configuration['midi_port_name_pattern']
+        self._in = open_input_from_pattern(pattern)
+        self._out = open_output_from_pattern(pattern)
+        self._tcp_socket = connect(host=self._configuration['host'], portno=self.TCP_PORT)
 
     def close(self):
         self._in.close()
         self._out.close()
+        self._tcp_socket.close()
 
     def poll(self):
         message = self._in.receive(block=False)
@@ -105,7 +92,7 @@ class QuSb(AbstractDevice):
                     )
                     self._callback(channel_state)
 
-        time.sleep(self._poll_sleep)
+        time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
@@ -137,7 +124,4 @@ class QuSb(AbstractDevice):
             type='sysex',
             data=self.SYSEX_HEADER + self.SYSEX_ALL_CALL + self.SYSEX_GET_SYSTEM_STATE + b'\x00'  # we are not an iPad
         )
-        if self._tcp_socket is not None:
-            self._tcp_socket.send(message)
-        else:
-            _logger.warning("no MIDI TCP Socket available, unable to request device state")
+        self._tcp_socket.send(message)
