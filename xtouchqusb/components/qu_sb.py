@@ -64,37 +64,10 @@ class QuSb(AbstractDevice):
         self._out.close()
 
     def poll(self):
-        message = self._in.receive(block=False)
+        message = self._in.receive()
         self._process_message(message)
 
-        time.sleep(self.POLL_SLEEP)
-
-    def _process_message(self, message: Message):
-        if message is not None and message.type != 'active_sensing':
-            if message.type == 'sysex':
-                # TODO: do something ?
-                pass
-
-            elif message.type == 'control_change':
-                if message.control == self.NRPN_CHANNEL:
-                    self._message_channel = message.value
-
-                elif message.control == self.NRPN_PARAMETER:
-                    self._message_parameter = self.CHANNEL_PARAMETER_CODE_TO_ENUM.get(
-                        message.value,
-                        ChannelParametersEnum.UNKNOWN
-                    )
-
-                elif message.control == self.NRPN_VALUE:
-                    self._message_value = message.value
-
-                elif message.control == self.NRPN_DATA_ENTRY_FINE:
-                    channel_state = ChannelState(
-                        self._message_channel,
-                        self._message_parameter,
-                        self._message_value
-                    )
-                    self._callback(channel_state)
+        # time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
@@ -133,3 +106,32 @@ class QuSb(AbstractDevice):
                     tcp_socket.close()
                     break
                 self._process_message(message)
+
+    def _process_message(self, message: Message):
+        if message is None or message.type == 'active_sensing':
+            return
+
+        if message.type == 'sysex':
+            # TODO: do something ?
+            pass
+
+        elif message.type == 'control_change':
+            if message.control == self.NRPN_CHANNEL:
+                self._message_channel = message.value
+
+            elif message.control == self.NRPN_PARAMETER:
+                self._message_parameter = self.CHANNEL_PARAMETER_CODE_TO_ENUM.get(
+                    message.value,
+                    ChannelParametersEnum.UNKNOWN
+                )
+
+            elif message.control == self.NRPN_VALUE:
+                self._message_value = message.value
+
+            elif message.control == self.NRPN_DATA_ENTRY_FINE:
+                channel_state = ChannelState(
+                    self._message_channel,
+                    self._message_parameter,
+                    self._message_value
+                )
+                self._callback(channel_state)
