@@ -1,5 +1,7 @@
 import logging
 import time
+from queue import Queue
+from threading import Thread
 from typing import Callable
 
 from mido.messages import Message
@@ -15,8 +17,51 @@ from xtouchqusb.python_extensions.mido_extensions import open_input_from_pattern
 _logger = logging.getLogger(__name__)
 
 
-class QuSb(AbstractDevice):
+class Midi:
     TCP_PORT = 51325
+
+    def __init__(self, configuration: dict):
+        self._configuration = configuration
+        self.queue_in: Queue[Message] = Queue()
+        self.queue_out: Queue[Message] = Queue()
+        self._thread = Thread(target=self._loop, daemon=True)
+
+        self._is_running: bool = False
+
+    def exec(self):
+        self._thread.start()
+
+    def _loop(self):
+        midi_tcp: SocketPort = connect(host=self._configuration['host'], portno=self.TCP_PORT)
+
+        pattern = self._configuration['midi_port_name_pattern']
+        midi_in: BaseInput = open_input_from_pattern(pattern)
+        midi_out: BaseOutput = open_output_from_pattern(pattern)
+
+        self._is_running = True
+        while self._is_running:
+            message = midi_tcp.receive(block=False)
+            if message is not None:
+                self.queue_in.put(message)
+
+            message = midi_in.receive(block=False)
+            if message is not None:
+                self.queue_in.put(message)
+
+            if not self.queue_out.empty():
+                message = self.queue_out.get(block=False)
+                midi_out.send(message)
+
+        midi_tcp.close()
+        midi_in.close()
+        midi_out.close()
+
+    def stop(self):
+        self._is_running = False
+
+
+class QuSb(AbstractDevice):
+
 
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
@@ -43,27 +88,23 @@ class QuSb(AbstractDevice):
     def __init__(self, configuration: dict, channel_state_callback: Callable):
         super().__init__(configuration, channel_state_callback)
 
-        self._in: BaseInput = None
-        self._out: BaseOutput = None
+        self._midi = Midi(configuration)
 
         self._message_channel: int = None
         self._message_parameter: ChannelParametersEnum = None
         self._message_value: int = None
 
     def connect(self):
+        self._midi.exec()
+
         self.request_state()
 
-        pattern = self._configuration['midi_port_name_pattern']
-        self._in = open_input_from_pattern(pattern)
-        self._out = open_output_from_pattern(pattern)
-
     def close(self):
-        self._in.close()
-        self._out.close()
+        self._midi.stop()
 
     def poll(self):
-        message = self._in.receive(block=False)
-        if message is not None:
+        while not self._midi.queue_in.empty():
+            message = self._midi.queue_in.get()
             self._process_message(message)
 
     def set_channel_state(self, channel_state: ChannelState):
@@ -71,22 +112,22 @@ class QuSb(AbstractDevice):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 
-        self._out.send(Message(
+        self._midi.queue_out.put(Message(
             type='control_change',
             control=self.NRPN_CHANNEL,
             value=channel_state.channel
         ))
-        self._out.send(Message(
+        self._midi.queue_out.put(Message(
             type='control_change',
             control=self.NRPN_PARAMETER,
             value=self.CHANNEL_ENUM_PARAMETER_CODE[channel_state.parameter],
         ))
-        self._out.send(Message(
+        self._midi.queue_out.put(Message(
             type='control_change',
             control=self.NRPN_VALUE,
             value=channel_state.value,
         ))
-        self._out.send(Message(
+        self._midi.queue_out.put(Message(
             type='control_change',
             control=self.NRPN_DATA_ENTRY_FINE,
             value=0,  # fixme: not always 0 ?
