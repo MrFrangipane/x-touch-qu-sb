@@ -105,7 +105,7 @@ class QuSb(AbstractDevice):
 
     def connect(self):
         self._midi.exec()
-
+        time.sleep(1)  # FIXME
         self.request_state()
 
     def close(self):
