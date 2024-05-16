@@ -1,4 +1,3 @@
-import copy
 import logging
 from typing import Callable
 from threading import Thread
@@ -49,7 +48,7 @@ class Osc(AbstractDevice):
             self._callback(channel_state)
 
     def set_channel_state(self, channel_state: ChannelState):
-        print('ss', channel_state)
+        """Usually called as a callback by the other component"""
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
             self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)

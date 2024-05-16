@@ -67,6 +67,7 @@ class QuSb(AbstractDevice):
             self._process_message(message)
 
     def set_channel_state(self, channel_state: ChannelState):
+        """Usually called as a callback by the other component"""
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 

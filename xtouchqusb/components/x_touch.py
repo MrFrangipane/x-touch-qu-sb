@@ -57,6 +57,7 @@ class XTouch(AbstractDevice):
             self._out.send(message)
 
     def set_channel_state(self, channel_state: ChannelState):
+        """Usually called as a callback by the other component"""
         channel = channel_state.channel - self.CHANNEL_OFFSET  # todo: paginate
         if channel > 15 or channel < 0:
             return
