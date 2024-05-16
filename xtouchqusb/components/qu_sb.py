@@ -58,6 +58,8 @@ class QuSb(AbstractDevice):
         self._out = open_output_from_pattern(pattern)
         self._tcp_socket = connect(host=self._configuration['host'], portno=self.TCP_PORT)
 
+        self.request_state()
+
     def close(self):
         self._in.close()
         self._out.close()
