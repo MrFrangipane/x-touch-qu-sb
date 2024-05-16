@@ -64,8 +64,9 @@ class QuSb(AbstractDevice):
         self._out.close()
 
     def poll(self):
-        message = self._in.receive()
-        self._process_message(message)
+        message = self._in.receive(block=False)
+        if message is not None:
+            self._process_message(message)
 
         # time.sleep(self.POLL_SLEEP)
 
