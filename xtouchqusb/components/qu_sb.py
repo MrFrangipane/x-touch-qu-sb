@@ -130,5 +130,5 @@ class QuSb(AbstractDevice):
             tcp_socket.send(message)
             for message in tcp_socket:
                 print(message.bytes())
-                if message.bytes() == self.SYSEX_HEADER + self.SYSEX_SYSTEM_STATE_END:
+                if message.bytes()[1:-1] == self.SYSEX_HEADER + self.SYSEX_SYSTEM_STATE_END:
                     tcp_socket.close()
