@@ -18,8 +18,6 @@ _logger = logging.getLogger(__name__)
 class QuSb(AbstractDevice):
     TCP_PORT = 51325
 
-    POLL_SLEEP = 0.01
-
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
     SYSEX_GET_SYSTEM_STATE = b'\x10'
@@ -67,8 +65,6 @@ class QuSb(AbstractDevice):
         message = self._in.receive(block=False)
         if message is not None:
             self._process_message(message)
-
-        time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
