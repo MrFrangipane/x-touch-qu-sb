@@ -47,7 +47,6 @@ class QuSb(AbstractDevice):
 
         self._in: BaseInput = None
         self._out: BaseOutput = None
-        # self._tcp_socket: SocketPort = None
 
         self._message_channel: int = None
         self._message_parameter: ChannelParametersEnum = None
@@ -63,11 +62,14 @@ class QuSb(AbstractDevice):
     def close(self):
         self._in.close()
         self._out.close()
-        # self._tcp_socket.close()
 
     def poll(self):
         message = self._in.receive(block=False)
+        self._process_message(message)
 
+        time.sleep(self.POLL_SLEEP)
+
+    def _process_message(self, message: Message):
         if message is not None and message.type != 'active_sensing':
             if message.type == 'sysex':
                 # TODO: do something ?
@@ -93,8 +95,6 @@ class QuSb(AbstractDevice):
                         self._message_value
                     )
                     self._callback(channel_state)
-
-        time.sleep(self.POLL_SLEEP)
 
     def set_channel_state(self, channel_state: ChannelState):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
@@ -131,3 +131,4 @@ class QuSb(AbstractDevice):
             for message in tcp_socket:
                 if bytearray(message.bytes()[1:-1]) == self.SYSEX_HEADER + b'\x00' + self.SYSEX_SYSTEM_STATE_END:
                     tcp_socket.close()
+                self._process_message(message)
