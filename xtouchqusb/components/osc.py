@@ -22,8 +22,7 @@ class Osc(AbstractDevice):
         self._server: ThreadingOSCUDPServer = None
         self._client: SimpleUDPClient = None
         self._server_thread: Thread = None
-        self._queue= Queue()
-        self._u = None
+        self._channel_state_queue: Queue[ChannelState] = Queue()
 
     def connect(self):
         dispatcher = Dispatcher()
@@ -44,22 +43,22 @@ class Osc(AbstractDevice):
         pass
 
     def poll(self):
-        while not self._queue.empty():
-            cs = self._queue.get()
-            print('cb', cs)
-            self._callback(cs)
+        while not self._channel_state_queue.empty():
+            channel_state = self._channel_state_queue.get()
+            print('cb', channel_state)
+            self._callback(channel_state)
 
     def set_channel_state(self, channel_state: ChannelState):
         print('ss', channel_state)
         if channel_state.parameter == ChannelParametersEnum.FADER:
             channel_number = channel_state.channel - 32
-            self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
+            # self._client.send_message(f'/fader{channel_number + 1}', float(channel_state.value) / 127.0)
 
     def _parse_osc(self, reply_address, osc_address, osc_value):
         channel_number = int(osc_address[-1]) - 1
-        cs = ChannelState(
+        channel_state = ChannelState(
             channel=32 + channel_number,
             parameter=ChannelParametersEnum.FADER,
             value=int(osc_value * 127)
         )
-        self._queue.put(cs)
+        self._channel_state_queue.put(channel_state)
