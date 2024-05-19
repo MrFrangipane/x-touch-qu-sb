@@ -19,7 +19,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     midi_tcp = connect('192.168.20.4', 51325)
-    # midi_in = open_input_from_pattern('QU-SB')
+    midi_in = open_input_from_pattern('QU-SB')
     # midi_out = open_output_from_pattern('QU-SB')
 
     try:
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         )
         begin = time.time()
         midi_tcp.send(request_message)
-        for message in midi_tcp:
+        for message in midi_in:
             messages.append((time.time(), message))
             if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
                 midi_tcp.close()
@@ -43,7 +43,6 @@ if __name__ == '__main__':
         pass
 
     finally:
-        pass
         # midi_tcp.close()
-        # midi_in.close()
+        midi_in.close()
         # midi_out.close()
