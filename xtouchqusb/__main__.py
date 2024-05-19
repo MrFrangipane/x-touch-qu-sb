@@ -29,25 +29,21 @@ def request_state():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    midi_in = open_input_from_pattern('QU-SB')
-
     begin = time.time()
     p = Process(target=request_state)
     p.start()
 
     try:
         messages = list()
-        for message in midi_in:
-            messages.append((time.time(), message))
-            if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
-                break
+        with open_input_from_pattern('QU-SB') as midi_in:
+            for message in midi_in:
+                messages.append((time.time(), message))
+                if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
+                    break
+                print(message)
 
         print(f'Elapsed: {messages[-1][0] - begin}')
         print(f'Number of messages: {len(messages)}')
 
     except KeyboardInterrupt:
         pass
-
-    finally:
-        midi_in.close()
-        # midi_out.close()
