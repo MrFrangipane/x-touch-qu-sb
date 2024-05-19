@@ -19,8 +19,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     midi_tcp = connect('192.168.20.4', 51325)
-    midi_in = open_input_from_pattern('QU-SB')
-    midi_out = open_output_from_pattern('QU-SB')
+    # midi_in = open_input_from_pattern('QU-SB')
+    # midi_out = open_output_from_pattern('QU-SB')
 
     try:
         messages = list()
@@ -44,5 +44,5 @@ if __name__ == '__main__':
 
     finally:
         midi_tcp.close()
-        midi_in.close()
-        midi_out.close()
+        # midi_in.close()
+        # midi_out.close()
