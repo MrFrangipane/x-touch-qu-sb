@@ -23,3 +23,11 @@ def open_output_from_pattern(pattern) -> BaseOutput:
             return mido.open_output(port_name)
 
     raise ConnectionError(f"No MIDI out port matching '{pattern}' was found")
+
+
+def get_input_port_name_from_pattern(pattern):
+    for port_name in mido.get_input_names():
+        if pattern in port_name:
+            return port_name
+
+    raise ConnectionError(f"No MIDI in port matching '{pattern}' was found")

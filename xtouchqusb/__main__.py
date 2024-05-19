@@ -10,8 +10,8 @@ import os.path
 import sys
 
 from multiprocessing import Process
-
-from xtouchqusb.python_extensions.mido_extensions import open_input_from_pattern, open_output_from_pattern
+from rtmidi.midiutil import open_midiinput
+from xtouchqusb.python_extensions.mido_extensions import get_input_port_name_from_pattern
 from xtouchqusb.components.qu_sb import QuSb
 
 _logger = logging.getLogger(__name__)
@@ -35,12 +35,15 @@ if __name__ == '__main__':
 
     try:
         messages = list()
-        with open_input_from_pattern('QU-SB') as midi_in:
-            for message in midi_in:
-                messages.append((time.time(), message))
-                if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
-                    break
-                print(message)
+        port_name = get_input_port_name_from_pattern('QU-SB')
+        midi_in, port_name = open_midiinput(port_name)
+
+        while True:
+            message = midi_in.get_message()
+            messages.append((time.time(), message))
+            # if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
+            #     break
+            print(message)
 
         print(f'Elapsed: {messages[-1][0] - begin}')
         print(f'Number of messages: {len(messages)}')
