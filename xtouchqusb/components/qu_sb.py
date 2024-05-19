@@ -45,9 +45,7 @@ class Midi:
 
         self._is_running = True
         while self._is_running:
-            _logger.info(f"Kick")
-            message = midi_in.receive(block=False)
-            if message is not None:
+            for message in midi_in.iter_pending():
                 self.queue_in.put(message)
 
             try:
@@ -71,7 +69,6 @@ class Midi:
 
 
 class QuSb(AbstractDevice):
-
 
     SYSEX_HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
     SYSEX_ALL_CALL = b'\x7F'
