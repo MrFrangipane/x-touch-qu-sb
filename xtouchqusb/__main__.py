@@ -31,10 +31,10 @@ if __name__ == '__main__':
         begin = time.time()
         midi_tcp.send(request_message)
         for message in midi_tcp:
+            messages.append((time.time(), message))
             if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
                 midi_tcp.close()
                 break
-            messages.append((time.time(), message))
 
         print(f'Elapsed: {messages[-1][0] - begin}')
         print(f'Number of messages: {len(messages)}')
@@ -43,6 +43,7 @@ if __name__ == '__main__':
         pass
 
     finally:
-        midi_tcp.close()
+        pass
+        # midi_tcp.close()
         # midi_in.close()
         # midi_out.close()
