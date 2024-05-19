@@ -18,8 +18,6 @@ _logger = logging.getLogger(__name__)
 
 
 class Midi:
-    TCP_PORT = 51325
-
     def __init__(self, configuration: dict):
         self._configuration = configuration
         self.queue_in: Queue[Message] = Queue()
