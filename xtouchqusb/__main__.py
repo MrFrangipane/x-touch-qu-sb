@@ -19,7 +19,7 @@ _logger = logging.getLogger(__name__)
 
 def request_state() -> list[Message]:
     _logger.info(f"Requesting Qu-SB state...")
-    _begin = time.time()
+    begin = time.time()
     messages: list[Message] = list()
 
     request_message = Message(
@@ -37,17 +37,13 @@ def request_state() -> list[Message]:
 
         midi_tcp.close()
 
-    _logger.info(f"Done in {time() - begin:.3f}s")
+    _logger.info(f"Done in {time.time() - begin:.3f}s")
 
     return messages
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-
-    begin = time.time()
-    p = Process(target=request_state)
-    p.start()
 
     try:
         state_messages = request_state()
