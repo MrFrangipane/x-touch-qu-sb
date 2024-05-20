@@ -60,7 +60,7 @@ class QuSbMidi:
         self.midi_out.send(message)
 
     def request_state(self) -> list[Message]:
-        _logger.info(f"Requesting Qu-SB state...")
+        _logger.info(f"Requesting Qu-SB state ({self._tcp_host}:{self._tcp_port})...")
         begin = time.time()
 
         was_connected = self.midi_in is not None
@@ -90,7 +90,7 @@ class QuSbMidi:
         if was_connected:
             self.connect()
 
-        _logger.info(f"Done in {time.time() - begin:.3f}s")
+        _logger.info(f"Received {len(messages)} state messages in {time.time() - begin:.3f}s")
 
         return messages
 
