@@ -11,48 +11,105 @@ import sys
 
 from multiprocessing import Process
 from rtmidi.midiutil import open_midiinput
-from xtouchqusb.python_extensions.mido_extensions import get_input_port_name_from_pattern
-from xtouchqusb.components.qu_sb import QuSb
+from xtouchqusb.python_extensions.mido_extensions import open_input_from_pattern, open_output_from_pattern
 
 _logger = logging.getLogger(__name__)
 
 
-def request_state() -> list[Message]:
-    _logger.info(f"Requesting Qu-SB state...")
-    begin = time.time()
-    messages: list[Message] = list()
+class QuSbConstants:
+    HEADER = b'\x00\x00\x1A\x50\x11\x01\x00'
+    ALL_CALL = b'\x7F'
+    GET_SYSTEM_STATE = b'\x10'
+    SYSTEM_STATE_END = b'\x14'
 
-    request_message = Message(
-        type='sysex',
-        data=QuSb.SYSEX_HEADER + QuSb.SYSEX_ALL_CALL + QuSb.SYSEX_GET_SYSTEM_STATE + b'\x00'  # we are not an iPad
-    )
-    with connect('192.168.20.4', 51325) as midi_tcp:
-        midi_tcp.send(request_message)
 
-        while True:
-            message = midi_tcp.receive()
-            if bytearray(message.bytes()[1:-1]) == QuSb.SYSEX_HEADER + b'\x00' + QuSb.SYSEX_SYSTEM_STATE_END:
-                break
-            messages.append(message)
+class QuSbMidi:
 
-        midi_tcp.close()
+    def __init__(self, tcp_host: str, tcp_port: int, port_name_pattern: str):
+        self._tcp_host = tcp_host
+        self._tcp_port = tcp_port
+        self._port_name_pattern = port_name_pattern
+        
+        self.midi_in: BaseInput = None
+        self.midi_out: BaseOutput = None
 
-    _logger.info(f"Done in {time.time() - begin:.3f}s")
+    def close(self):
+        _logger.info(f"Disconnecting USB MIDI ports")
 
-    return messages
+        if self.midi_in is not None:
+            self.midi_in.close()
+            self.midi_in = None
+        
+        if self.midi_out is not None:
+            self.midi_out.close()
+            self.midi_out = None
+
+    def connect(self):
+        _logger.info(f"Connecting USB MIDI ports")
+
+        if self.midi_in is None:
+            self.midi_in = open_input_from_pattern(self._port_name_pattern)
+
+        if self.midi_out is None:
+            self.midi_out = open_output_from_pattern(self._port_name_pattern)
+
+    def receive(self, block=True) -> Message:
+        return self.midi_in.receive(block)
+
+    def send(self, message: Message) -> None:
+        self.midi_out.send(message)
+
+    def request_state(self) -> list[Message]:
+        _logger.info(f"Requesting Qu-SB state...")
+        begin = time.time()
+
+        was_connected = self.midi_in is not None
+        self.close()
+    
+        request_message = Message(
+            type='sysex',
+            data=(
+                QuSbConstants.HEADER +
+                QuSbConstants.ALL_CALL +
+                QuSbConstants.GET_SYSTEM_STATE +
+                b'\x00'  # we are not an iPad
+            )
+        )
+        messages: list[Message] = list()
+        with connect(self._tcp_host, self._tcp_port) as midi_tcp:
+            midi_tcp.send(request_message)
+    
+            while True:
+                message = midi_tcp.receive()
+                if bytearray(message.bytes()[1:-1]) == QuSbConstants.HEADER + b'\x00' + QuSbConstants.SYSTEM_STATE_END:
+                    break
+                messages.append(message)
+    
+            midi_tcp.close()
+
+        if was_connected:
+            self.connect()
+
+        _logger.info(f"Done in {time.time() - begin:.3f}s")
+
+        return messages
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    try:
-        state_messages = request_state()
+    qu_sb_midi = QuSbMidi(
+        tcp_host='192.168.20.4',
+        tcp_port=51325,
+        port_name_pattern='QU-SB'
+    )
 
-        port_name = get_input_port_name_from_pattern('QU-SB')
-        midi_in, port_name = open_midiinput(port_name)
+    try:
+        qu_sb_midi.connect()
+        all_state_messages = qu_sb_midi.request_state()
 
         while True:
-            message = midi_in.get_message()
+            message = qu_sb_midi.receive()
             if message is not None:
                 print(message)
 
