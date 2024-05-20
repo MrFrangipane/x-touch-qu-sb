@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Callable
 
 from mido.messages import Message
@@ -68,8 +67,6 @@ class QuSb(AbstractDevice):
     def _process_message(self, message: Message):
         if message is None or message.type == 'active_sensing':
             return
-
-        _logger.info(f"{time.time()}: {message}")
 
         if message.type == 'sysex':
             # TODO: do something ?
