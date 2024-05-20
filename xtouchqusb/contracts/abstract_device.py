@@ -3,11 +3,12 @@ from typing import Callable
 
 
 from xtouchqusb.entities.channel_state import ChannelState
+from xtouchqusb.contracts.base_configuration import BaseConfiguration
 
 
 class AbstractDevice(ABC):
 
-    def __init__(self, configuration: dict, channel_state_update_callback: Callable):
+    def __init__(self, configuration: BaseConfiguration, channel_state_update_callback: Callable):
         self._configuration = configuration
         self._callback = channel_state_update_callback
 
