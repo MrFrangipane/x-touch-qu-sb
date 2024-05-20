@@ -112,7 +112,10 @@ if __name__ == '__main__':
         while True:
             message = qu_sb_midi.receive()
             if message is not None:
-                print(message)
+                if message.type == 'sysex':
+                    print('sysex', message.hex())
+                else:
+                    print(message)
 
     except KeyboardInterrupt:
         pass
