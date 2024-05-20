@@ -88,7 +88,7 @@ class QuSbMidi:
             midi_tcp.close()
 
         if was_connected:
-            time.sleep(0.01)
+            time.sleep(0.1)
             self.connect()
 
         _logger.info(f"Done in {time.time() - begin:.3f}s")
@@ -114,7 +114,6 @@ if __name__ == '__main__':
             if message is not None:
                 if message.type == 'sysex':
                     print('sysex', message.hex())
-                    print('sysex', all_state_messages[-1].hex())
                 else:
                     print(message)
 
