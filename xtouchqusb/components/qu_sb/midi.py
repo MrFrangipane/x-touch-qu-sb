@@ -44,7 +44,7 @@ class QuSbMidi:
             self.midi_out = open_output_from_pattern(self._port_name_pattern)
 
     def receive_pending(self, block=True) -> Message:
-        return self.midi_in.receive_pending()
+        return self.midi_in.iter_pending()
 
     def send(self, message: Message) -> None:
         self.midi_out.send(message)
