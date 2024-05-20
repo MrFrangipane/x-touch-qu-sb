@@ -43,6 +43,8 @@ class QuSb(AbstractDevice):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 
+        print(channel_state)
+
         self._midi.send(Message(
             type='control_change',
             control=QuSbConstants.NRPN_CHANNEL,
