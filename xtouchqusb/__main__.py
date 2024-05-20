@@ -88,7 +88,6 @@ class QuSbMidi:
             midi_tcp.close()
 
         if was_connected:
-            time.sleep(0.1)
             self.connect()
 
         _logger.info(f"Done in {time.time() - begin:.3f}s")
@@ -106,16 +105,16 @@ if __name__ == '__main__':
     )
 
     try:
-        qu_sb_midi.connect()
         all_state_messages = qu_sb_midi.request_state()
+        qu_sb_midi.connect()
 
         while True:
-            message = qu_sb_midi.receive()
-            if message is not None:
-                if message.type == 'sysex':
-                    print('sysex', message.hex())
+            message_ = qu_sb_midi.receive()
+            if message_ is not None:
+                if message_.type == 'sysex':
+                    print('sysex', message_.hex())
                 else:
-                    print(message)
+                    print(message_)
 
     except KeyboardInterrupt:
         pass
