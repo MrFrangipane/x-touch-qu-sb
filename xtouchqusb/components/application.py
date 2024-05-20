@@ -34,7 +34,12 @@ class Application:
             return XTouch(configuration, callback)
 
         elif configuration['type'] == 'qu-sb':
-            return QuSb(QuSbConfiguration(**configuration), callback)
+            qu_sb_configuration = QuSbConfiguration(
+                tcp_host=configuration['host'],
+                tcp_port=configuration['port'],
+                port_name_pattern=configuration['midi_port_name_pattern']
+            )
+            return QuSb(qu_sb_configuration, callback)
 
     def _callback_a(self, channel_state):
         self._component_a.set_channel_state(channel_state)
