@@ -88,6 +88,7 @@ class QuSbMidi:
             midi_tcp.close()
 
         if was_connected:
+            time.sleep(0.01)
             self.connect()
 
         _logger.info(f"Done in {time.time() - begin:.3f}s")
