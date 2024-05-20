@@ -23,6 +23,8 @@ class XTouch(AbstractDevice):
         self._in: BaseInput = None
         self._out: BaseOutput = None
 
+        self._previous_state: ChannelState = ChannelState(-1, ChannelParametersEnum.UNKNOWN, -1)
+
     def connect(self):
         pattern = self._configuration['midi_port_name_pattern']
         self._in = open_input_from_pattern(pattern)
@@ -35,13 +37,14 @@ class XTouch(AbstractDevice):
     def poll(self):
         message = self._in.receive(block=False)
         if message is not None:
+            channel_state = None
             if message.type == 'pitchwheel':
                 value = int(float(message.pitch + 8192) / 16380.0 * 127)
-                self._callback(ChannelState(
+                channel_state = ChannelState(
                     channel=message.channel + self.CHANNEL_OFFSET,  # todo: paginate
                     parameter=ChannelParametersEnum.FADER,
                     value=value
-                ))
+                )
 
             elif message.type == 'note_on' and message.note == 24:
                 channel_state = ChannelState(
@@ -49,10 +52,14 @@ class XTouch(AbstractDevice):
                     parameter=ChannelParametersEnum.COMPRESSOR_ON,
                     value=int(message.velocity / 127)
                 )
-                self._callback(channel_state)
 
             else:
                 _logger.info(message)
+
+            if channel_state is not None:
+                if channel_state != self._previous_state:
+                    self._previous_state = channel_state
+                    self._callback(channel_state)
 
             self._out.send(message)
 

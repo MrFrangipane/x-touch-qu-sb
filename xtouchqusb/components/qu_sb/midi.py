@@ -43,8 +43,8 @@ class QuSbMidi:
             _logger.info(f"Connecting USB MIDI output")
             self.midi_out = open_output_from_pattern(self._port_name_pattern)
 
-    def receive(self, block=True) -> Message:
-        return self.midi_in.receive(block)
+    def receive_pending(self, block=True) -> Message:
+        return self.midi_in.reveive_pending()
 
     def send(self, message: Message) -> None:
         self.midi_out.send(message)

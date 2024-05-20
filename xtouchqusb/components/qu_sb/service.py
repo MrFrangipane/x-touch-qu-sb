@@ -26,7 +26,7 @@ class QuSb(AbstractDevice):
         self._message_parameter: ChannelParametersEnum = None
         self._message_value: int = None
 
-        self._last_state: ChannelState = ChannelState(-1, ChannelParametersEnum.UNKNOWN, -1)
+        self._previous_state: ChannelState = ChannelState(-1, ChannelParametersEnum.UNKNOWN, -1)
 
     def connect(self):
         for state_message in self._midi.request_state():
@@ -38,20 +38,20 @@ class QuSb(AbstractDevice):
         self._midi.close()
 
     def poll(self):
-        self._process_message(self._midi.receive(block=False))
+        for message in self._midi.receive_pending():
+            self._process_message(message)
 
     def set_channel_state(self, channel_state: ChannelState):
         """Usually called as a callback by the other component"""
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 
-        if channel_state != self._last_state:
-            self._last_state = channel_state
+        if channel_state != self._previous_state:
+            self._previous_state = channel_state
         else:
             return
 
         print(channel_state)
-
 
         self._midi.send(Message(
             type='control_change',
