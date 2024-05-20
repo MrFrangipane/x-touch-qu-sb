@@ -53,7 +53,8 @@ if __name__ == '__main__':
 
         while True:
             message = midi_in.get_message()
-            print(message)
+            if message is not None:
+                print(message)
 
     except KeyboardInterrupt:
         pass
