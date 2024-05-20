@@ -50,6 +50,9 @@ class QuSb(AbstractDevice):
         else:
             return
 
+        print(channel_state)
+
+
         self._midi.send(Message(
             type='control_change',
             control=QuSbConstants.NRPN_CHANNEL,
