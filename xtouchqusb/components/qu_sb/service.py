@@ -26,6 +26,8 @@ class QuSb(AbstractDevice):
         self._message_parameter: ChannelParametersEnum = None
         self._message_value: int = None
 
+        self._last_state: ChannelState = ChannelState(-1, ChannelParametersEnum.UNKNOWN, -1)
+
     def connect(self):
         for state_message in self._midi.request_state():
             self._process_message(state_message)
@@ -43,7 +45,10 @@ class QuSb(AbstractDevice):
         if channel_state.parameter == ChannelParametersEnum.UNKNOWN:
             return
 
-        print(channel_state)
+        if channel_state != self._last_state:
+            self._last_state = channel_state
+        else:
+            return
 
         self._midi.send(Message(
             type='control_change',
