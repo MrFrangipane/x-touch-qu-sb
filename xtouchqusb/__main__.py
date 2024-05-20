@@ -34,23 +34,23 @@ class QuSbMidi:
         self.midi_out: BaseOutput = None
 
     def close(self):
-        _logger.info(f"Disconnecting USB MIDI ports")
-
         if self.midi_in is not None:
+            _logger.info(f"Disconnecting USB MIDI input")
             self.midi_in.close()
             self.midi_in = None
         
         if self.midi_out is not None:
+            _logger.info(f"Disconnecting USB MIDI output")
             self.midi_out.close()
             self.midi_out = None
 
     def connect(self):
-        _logger.info(f"Connecting USB MIDI ports")
-
         if self.midi_in is None:
+            _logger.info(f"Connecting USB MIDI input")
             self.midi_in = open_input_from_pattern(self._port_name_pattern)
 
         if self.midi_out is None:
+            _logger.info(f"Connecting USB MIDI output")
             self.midi_out = open_output_from_pattern(self._port_name_pattern)
 
     def receive(self, block=True) -> Message:
