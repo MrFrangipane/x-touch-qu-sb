@@ -3,7 +3,7 @@ import time
 
 from mido.messages import Message
 from mido.ports import BaseInput, BaseOutput
-from mido.sockets import connect
+from mido.sockets import connect, SocketPort
 
 from xtouchqusb.python_extensions.mido_extensions import open_input_from_pattern, open_output_from_pattern
 from xtouchqusb.components.qu_sb.constants import QuSbConstants
@@ -22,6 +22,8 @@ class QuSbMidi:
 
         self.midi_in: BaseInput = None
         self.midi_out: BaseOutput = None
+        self.midi_tcp: BaseIOPort = None
+
 
     def close(self):
         if self.midi_in is not None:
@@ -35,45 +37,45 @@ class QuSbMidi:
             self.midi_out = None
 
     def connect(self):
-        if self.midi_in is None:
-            _logger.info(f"Connecting USB MIDI input")
-            self.midi_in = open_input_from_pattern(self._port_name_pattern)
-
-        if self.midi_out is None:
-            _logger.info(f"Connecting USB MIDI output")
-            self.midi_out = open_output_from_pattern(self._port_name_pattern)
+        # if self.midi_in is None:
+        #     _logger.info(f"Connecting USB MIDI input")
+        #     self.midi_in = open_input_from_pattern(self._port_name_pattern)
+        #
+        # if self.midi_out is None:
+        #     _logger.info(f"Connecting USB MIDI output")
+        #     self.midi_out = open_output_from_pattern(self._port_name_pattern)
+        self.midi_tcp = connect(self._tcp_host, self._tcp_port)
 
     def receive_pending(self, block=True) -> Message:
-        return self.midi_in.iter_pending()
+        return self.midi_tcp.iter_pending()
 
     def send(self, message: Message) -> None:
-        self.midi_out.send(message)
+        self.midi_tcp.send(message)
 
     def request_state(self) -> list[Message]:
         _logger.info(f"Requesting Qu-SB state ({self._tcp_host}:{self._tcp_port})...")
         begin = time.time()
 
-        was_connected = self.midi_in is not None
-        self.close()
+        # was_connected = self.midi_in is not None
+        # self.close()
 
         request_message = Message(
             type='sysex',
             data=QuSbConstants.SYSEX_REQUEST_STATE
         )
         messages: list[Message] = list()
-        with connect(self._tcp_host, self._tcp_port) as midi_tcp:
-            midi_tcp.send(request_message)
+        self.midi_tcp.send(request_message)
 
-            while True:
-                message = midi_tcp.receive()
-                if bytearray(message.bytes()[1:-1]) == QuSbConstants.SYSEX_REQUEST_STATE_END:
-                    break
-                messages.append(message)
+        while True:
+            message = self.midi_tcp.receive()
+            if bytearray(message.bytes()[1:-1]) == QuSbConstants.SYSEX_REQUEST_STATE_END:
+                break
+            messages.append(message)
 
-            midi_tcp.close()
+            # midi_tcp.close()
 
-        if was_connected:
-            self.connect()
+        # if was_connected:
+        #     self.connect()
 
         _logger.info(f"Received {len(messages)} state messages in {time.time() - begin:.3f}s")
 

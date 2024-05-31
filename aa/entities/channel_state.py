@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from xtouchqusb.entities.channel_parameters_enum import ChannelParametersEnum
+from aa.entities.channel_parameters_enum import ChannelParametersEnum
 
 
 @dataclass

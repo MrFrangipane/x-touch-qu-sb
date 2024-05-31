@@ -1,0 +1,10 @@
+---
+component_a:
+    type: "x-touch"
+    midi_port_name_pattern: "X-Touch-Ext"
+
+component_b:
+    type: "qu-sb"
+    host: "192.168.20.4"
+    port: 51325
+    midi_port_name_pattern: "QU-SB MIDI"

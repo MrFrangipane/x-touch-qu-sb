@@ -29,10 +29,9 @@ class QuSb(AbstractDevice):
         self._previous_state: ChannelState = ChannelState(-1, ChannelParametersEnum.UNKNOWN, -1)
 
     def connect(self):
+        self._midi.connect()
         for state_message in self._midi.request_state():
             self._process_message(state_message)
-        
-        self._midi.connect()
 
     def close(self):
         self._midi.close()

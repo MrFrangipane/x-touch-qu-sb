@@ -1,7 +1,7 @@
 import mido
 from mido.ports import BaseInput, BaseOutput
 
-from xtouchqusb.python_extensions import logger
+from aa.python_extensions import logger
 
 
 _logger = logger.make_logger(__name__)
@@ -31,3 +31,11 @@ def get_input_port_name_from_pattern(pattern):
             return port_name
 
     raise ConnectionError(f"No MIDI in port matching '{pattern}' was found")
+
+
+def get_output_port_name_from_pattern(pattern):
+    for port_name in mido.get_output_names():
+        if pattern in port_name:
+            return port_name
+
+    raise ConnectionError(f"No MIDI out port matching '{pattern}' was found")
