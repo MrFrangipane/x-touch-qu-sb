@@ -1,0 +1,93 @@
+# https://hjson.github.io/try.html
+
+{
+    # Map MIDI and OSC sources
+    devices: [
+        {
+            name: X-Touch-XT
+            type: MIDI
+            midi_port_pattern: X-Touch
+            controls: [
+                {
+                    name: Fader01
+                    type: absolute
+                    feedback: yes
+                    midi: { channel: 1, type: "pitch" }
+                    data_type: float
+                    map_range: [0.0, 1.0]
+                }
+                {
+                    name: Fader02
+                    type: absolute
+                    feedback: yes
+                    midi: { channel: 2, type: "pitch" }
+                    data_type: float
+                    map_range: [0.0, 1.0]
+                }
+                {
+                    name: Mute01
+                    type: toggle
+                    feedback: yes
+                    midi: { channel: 1, type: "note", note: 54 }
+                    data_type: bool
+                }
+                {
+                    name: Mute02
+                    type: toggle
+                    feedback: yes
+                    midi: { channel: 2, type: "note", note: 54 }
+                    data_type: bool
+                }
+            ]
+        }
+        {
+            name: Pi-Touchscreen
+            type: OSC
+            controls: [
+                {
+                    name: BankUp
+                    osc_address: "/bankUp"
+                }
+                {
+                    name: BankDown
+                    osc_address: "/bankDown"
+                }
+            ]
+        }
+    ]
+
+    # Aggregate multiple devices into one
+    meta-devices: [
+        {
+            name: MetaDevice
+            aggregates: ["X-Touch-XT", "Pi-Touchscreen"]
+            banks: [
+                {
+                    page_count: 4
+                    page_up: Pi-Touchscreen.BankUp
+                    page_down: Pi-Touchscreen.BankUp
+                    control_groups: [
+                        {
+                            rename_pattern: Fader{absolute_index:02d}
+                            controls: [
+                                X-Touch-XT.Fader01
+                                X-Touch-XT.Fader02
+                            ]
+                        }
+                        {
+                            rename_pattern: Mute{absolute_index:02d}
+                            controls: [
+                                X-Touch-XT.Mute01
+                                X-Touch-XT.Mute02
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+
+    # Gnia gnia
+    gnia-gnias: [
+    ]
+}

@@ -1,0 +1,7 @@
+
+
+[device.xtouchxt.fader]
+number = 1
+type = "float"
+range.min = 0.0
+range.max = 0.1

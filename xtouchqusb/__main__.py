@@ -120,54 +120,46 @@ def process_xtouch(message, queue_to_qusb):
 
 def qusb_recv(queue):
     midi_in = open_input_from_pattern("MIDI Control")
-    try:
-        while True:
-            message = midi_in.receive()
-            QuSB.process(message, queue)
-    except KeyboardInterrupt:
-        pass
+    while True:
+        message = midi_in.receive()
+        QuSB.process(message, queue)
 
 
 def qusb_send(queue):
     midi_in = open_output_from_pattern("MIDI Control")
-    try:
-        while True:
-            message = queue.get()
-            midi_in.send(message)
-    except KeyboardInterrupt:
-        pass
+    while True:
+        message = queue.get()
+        midi_in.send(message)
 
 
 def xtouch_recv(queue_to_xtouch, queue_to_qusb):
-    midi_in = open_input_from_pattern("Frangitronik")
-    try:
-        while True:
-            message = midi_in.receive()
-            queue_to_xtouch.put(message)  # loopback
-            process_xtouch(message, queue_to_qusb)
-    except KeyboardInterrupt:
-        pass
+    midi_in = open_input_from_pattern("X-Touch")
+    while True:
+        message = midi_in.receive()
+        queue_to_xtouch.put(message)  # loopback
+        process_xtouch(message, queue_to_qusb)
 
 
 def xtouch_send(queue):
-    midi_in = open_output_from_pattern("Frangitronik")
-    try:
-        while True:
-            message = queue.get()
-            midi_in.send(message)
-    except KeyboardInterrupt:
-        pass
+    midi_in = open_output_from_pattern("X-Touch")
+    while True:
+        message = queue.get()
+        midi_in.send(message)
 
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
+    is_running = True
     queue_to_xtouch = Queue()
     queue_to_qusb = Queue()
 
-    p_qusb_in = Process(target=qusb_recv, args=(queue_to_xtouch,))
-    p_qusb_out = Process(target=qusb_send, args=(queue_to_qusb,))
+    p_qusb_in = Process(target=qusb_recv, args=(queue_to_xtouch, ))
+    p_qusb_out = Process(target=qusb_send, args=(queue_to_qusb, ))
 
     p_xtouch_in = Process(target=xtouch_recv, args=(queue_to_xtouch, queue_to_qusb))
-    p_xtouch_out = Process(target=xtouch_send, args=(queue_to_xtouch,))
+    p_xtouch_out = Process(target=xtouch_send, args=(queue_to_xtouch, ))
 
     p_xtouch_in.start()
     p_xtouch_out.start()
