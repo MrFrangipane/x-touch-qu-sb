@@ -10,3 +10,4 @@ This project uses [PySide6 helpers](https://github.com/MrFrangipane/pyside6-help
 
 - TCP QU SB state request, receive on TCP: 22020 messages in 1.6s
 - TCP QU SB state request, receive on MIDI: 22020 messages in 1.6s 
+- Raspi 4 Bookworm (06/2024) is Python 3.11.2

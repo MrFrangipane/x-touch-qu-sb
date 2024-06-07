@@ -1,0 +1,66 @@
+---
+schema_version: 1
+#
+# Map devices (MIDI, OSC, META)
+devices:
+  #
+  # X Touch XT
+  - name: X-Touch-XT
+    type: MIDI
+    midi_port_pattern: X-Touch
+    controls:
+      - name: Fader01
+        reference: absolute
+        feedback_messages: true
+        midi: {channel: 1, type: pitch}
+
+      - name: Fader02
+        reference: absolute
+        feedback_messages: true
+        midi: {channel: 2, type: pitch}
+
+      - name: Mute01
+        reference: absolute
+        feedback_messages: true
+        midi: {channel: 1, type: note, note: 54}
+
+      - name: Mute02
+        reference: absolute
+        feedback_messages: true
+        midi: {channel: 2, type: note, note: 54}
+
+      - name: Knob01
+        reference: relative
+        feedback_messages: true
+        midi: {channel: 2, type: cc, cc: 54}
+  #
+  # X Touch XT
+  - name: Pi-Touchscreen
+    type: OSC
+    controls:
+      - name: BankUp
+        osc_address: /bankUp
+      - name: BankDown
+        osc_address: /bankDown
+  #
+  # Aggregation of X-Touch + Pi
+  - name: FrontOfHouse
+    type: META
+    aggregates: [X-Touch-XT, Pi-Touchscreen]
+    banks:
+      - page_count: 4
+        page_up: Pi-Touchscreen.BankUp
+        page_down: Pi-Touchscreen.BankDown
+        control_groups:
+          - rename_pattern: Fader{absolute_index:02d}
+            controls:
+              - X-Touch-XT.Fader01
+              - X-Touch-XT.Fader02
+          - rename_pattern: Mute{absolute_index:02d}
+            controls:
+              - X-Touch-XT.Mute01
+              - X-Touch-XT.Mute02
+          - rename_pattern: Knob{absolute_index:02d}
+            controls:
+              - X-Touch-XT.Knob01
+              - X-Touch-XT.Knob02

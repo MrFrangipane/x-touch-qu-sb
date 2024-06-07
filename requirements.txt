@@ -2,5 +2,6 @@ mido[ports-rtmidi]
 python-osc
 python-rtmidi
 pyyaml
+dataclasses-json
 # PySide6
 # pyside6-helpers @ git+https://github.com/MrFrangipane/pyside6-helpers@main
